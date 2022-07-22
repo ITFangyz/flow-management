@@ -1,0 +1,24 @@
+#app{
+    margin-top: 0;
+}
+
+form.el-form.el-form--inline {
+    text-align: left;
+}
+
+.pagination-container{
+    text-align: right;
+}
+
+/* 控件属性设置  内容靠左*/
+.ant-tabs-line{
+    text-align: left;
+}
+
+.form-design{
+    height: 80vh;
+}
+
+.content.show-head-and-toolbars-top{
+    height: calc(100% - 170px);
+}
