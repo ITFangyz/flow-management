@@ -122,7 +122,7 @@ export default {
       dialogImageUrl: '', //上传图标url
       dialogVisible: false, //弹窗是否可见
       designerForm:{},
-      activeStep: 0,
+      activeStep: 2,
       basicInfoForm: {},
       categoryOptions: [],
       loadIndex: 0,
@@ -152,16 +152,19 @@ export default {
   },
   created() {
     this.getCategoryList();
-    console.log("this.$route.query.processId", this.$route.query.processId)
+    console.log("this.$route.query", this.$route.query)
     if (this.$route.query.processId) {
       //流程数据通过路由传参
       this.bpmnXml = this.$route.query.bpmXml
+      this.designerForm.processName = this.$route.query.procName
+      this.designerForm.category = this.$route.query.procTypeId
+      this.designerForm.procRemark = this.$route.query.procRemark
 
       processDetail(this.$route.query.processId).then(res => {
         console.log("流程详情++++", res)
-        this.designerForm.processName = res.data.procName
-        this.designerForm.category = res.data.procTypeId
-        this.designerForm.procRemark = res.data.procRemark
+        // this.designerForm.processName = res.data.procName
+        // this.designerForm.category = res.data.procTypeId
+        // this.designerForm.procRemark = res.data.procRemark
         this.flowId = res.data.id
         this.formId = res.data.formId
 
@@ -290,7 +293,8 @@ export default {
         this.dto.procName = this.designerForm.processName
         this.dto.procRemark = this.designerForm.procRemark
         this.dto.procStatus = '1'
-        this.dto.procTypeId = this.designerForm.category
+        // this.dto.procTypeId = this.designerForm.category
+        this.dto.procTypeId = '1542305287642791937'   //暂时写死
 
         this.dto.flowableForm = this.flowableForm
         this.dto.scopes = [
@@ -338,9 +342,11 @@ export default {
     },
     /** 查询流程分类列表 */
     getCategoryList() {
-      console.log("111")
       listCategory({pageNum: 1,pageSize: 10})
-        .then(response => this.categoryOptions = response.data.records)
+        .then(response => {
+          console.log("流程分类返回", response)
+          this.categoryOptions = response.data.records
+        })
     },
     /** xml 文件 */
     getModelDetail(definitionId) {

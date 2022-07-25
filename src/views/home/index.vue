@@ -64,7 +64,7 @@ export default {
     data(){
         return{
             Msg:'首页',
-            activeIndex: '3',
+            activeIndex: '4',
         }
     },
     methods: {

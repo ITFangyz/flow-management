@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <!-- <dept-Select></dept-Select> -->
-    <button @click="getJobs">查询岗位</button>
+    <!-- <button @click="getJobs">查询岗位</button> -->
     <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
       <el-form-item label="名称" prop="name">
         <el-input
@@ -89,7 +89,16 @@
       <process-viewer :key="`designer-${processView.index}`" :xml="processView.xmlData" :style="{height: '400px'}" />
     </el-dialog>
 
+    <!-- 表单 -->
+    <el-dialog :visible.sync="formVisible" width="70%" append-to-body>
+      <build-form :form-conf="formConf" showType="alter" @submit="submitForm"></build-form>
+      <!-- <div>
+        <el-button @click="submitForm">确定</el-button>
+      </div> -->
+    </el-dialog>
+
     <job-select v-if="dialogTableVisible" @getSelected="getSelected"></job-select>
+    <!-- <userSelect v-if="dialogTableVisible" @getSelected="getSelected"></userSelect> -->
     <!-- <el-dialog title="岗位信息" :visible.sync="dialogTableVisible">
       <el-form :model="queryParams" ref="queryForm" :inline="true" v-show="showSearch" label-width="68px">
         <el-form-item label="姓名" prop="name">
@@ -131,13 +140,16 @@
 </template>
 
 <script>
-// import { listProcess } from "@/api/workflow/process";
+
 import { listProcess, processDetail, readProcessXml, processDel, updateProcessStatus } from '@/api/workflow/bpmProcDef';
+import { startProcess } from '@/api/workflow/process';
 import { listJobs } from '@/api/workflow/user'
 // import { readXml } from '@/api/workflow/definition'
 import ProcessViewer from '@/components/ProcessViewer'
 import deptSelect from '@/components/DepartmentCascader'
 import jobSelect from '@/components/jobSelect'
+import userSelect from '@/components/userSelect'
+import BuildForm from "@/components/buildForm/index.vue";
 
 export default {
   name: 'WorkProcess',
@@ -145,6 +157,8 @@ export default {
     ProcessViewer,
     deptSelect,
     jobSelect,
+    userSelect,
+    BuildForm
 },
   data() {
     return {
@@ -180,6 +194,7 @@ export default {
         xmlData:"",
       },
       formConf:{},  //表单详细信息
+      formVisible: false, //表单是否可见
       dialogTableVisible: false, //表单信息展示
       gridData: [{
         date: '2016-05-02',
@@ -200,12 +215,13 @@ export default {
       }],
       currentRow: null,
       jobLists: [],
+      startFlowId: '',  //发起流程ID
     }
   },
   created() {
     // this.getCategoryList();
 
-    // this.getList();
+    this.getList();
   },
   methods: {
     //组件返回选中项信息
@@ -269,26 +285,47 @@ export default {
     handleProcessView(row) {
       console.log("row流程信息", row)
 
-      // let definitionId = row.id;
-      // this.processView.title = "流程图";
-      // this.processView.index = definitionId;
-      // // 发送请求，获取xml
-      // readProcessXml(definitionId).then(res => {
-      //   console.log("流程详情res", res)
-      //   this.processView.xmlData = res.data;
-      // })
-      // this.processView.open = true;
+      let definitionId = row.id;
+      this.processView.title = "流程图";
+      this.processView.index = definitionId;
+      // 发送请求，获取xml
+      readProcessXml(definitionId).then(res => {
+        console.log("流程详情res", res)
+        this.processView.xmlData = res.data;
+      })
+      this.processView.open = true;
     },
     handleStart(row) {
       console.log("点击发起流程", row)
-      // this.$router.push({
-      //   path: '/work/start',
-      //   query: {
-      //     definitionId: row.definitionId,
-      //     deployId: row.deploymentId,
-      //   }
-      // })
+      this.formVisible = true
+      this.startFlowId = row.id
+      // let param = {
+      //   innerProcDefId:"1550671820656357377",
+      //   startForm:{}
+      // }
+      processDetail(row.id).then(response => {
+        console.log("流程详情 response", response)
+        this.formConf = JSON.parse(response.data.flowableForm.formJson)
+      })
+      // param.startForm = this.formConf
+      
+      
     },
+    submitForm(data){
+      this.formVisible = false
+      console.log("表单组件接受参数", data)
+      let param = {
+        innerProcDefId:this.startFlowId,
+        startForm:data
+      }
+      console.log("流程发起参数", param)
+      startProcess(param).then(res => {
+        console.log("发起流程返回", res)
+        this.startFlowId = ''
+        this.$message.success("发起成功");
+      })
+    },
+
     //查看流程详情
     handleDetail(row){
       console.log("查看流程详情", row)
@@ -299,7 +336,10 @@ export default {
           // path: '/processDetail',
           query: {
             processId: row.id,
-            bpmXml: response.data.bpmXml
+            bpmXml: response.data.bpmXml,
+            procName: response.data.procName,
+            procRemark: response.data.procRemark,
+            procTypeId: response.data.procTypeId,
           }
         })
         // this.formConf = JSON.parse(response.da ta.flowableForm.formJson)

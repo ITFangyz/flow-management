@@ -1,25 +1,25 @@
 <template>
-    <el-dialog title="岗位信息" :visible="true" @close="dialogClose">
+    <el-dialog title="角色信息" :visible="true" @close="dialogClose">
       <el-form :model="queryParams" ref="queryForm" :inline="true" label-width="68px">
-        <el-form-item label="岗位名称" prop="name">
+        <el-form-item label="角色名称" prop="name">
           <el-input
             v-model="queryParams.name"
             placeholder="请输入名称"
             clearable
             size="small"
-            @keyup.enter.native="getJobs"
+            @keyup.enter.native="getRoles"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="mini" @click="getJobs">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search" size="mini" @click="getRoles">搜索</el-button>
           <el-button icon="el-icon-refresh" size="mini" @click="resetQueryParams">重置</el-button>
         </el-form-item>
       </el-form>
-      <el-table :data="jobLists" @current-change="handleRowChange" highlight-current-row>
+      <el-table :data="roleLists" @current-change="handleRowChange" highlight-current-row>
         <el-table-column  width="80" type="index"></el-table-column>
-        <el-table-column property="name" label="岗位名称" width="200"></el-table-column>
+        <el-table-column property="name" label="角色名称" width="200"></el-table-column>
         <el-table-column property="departmentName" label="部门名称" width="200"></el-table-column>
-        <el-table-column property="id" label="岗位ID"></el-table-column>
+        <el-table-column property="id" label="角色ID"></el-table-column>
       </el-table>
       <div class="bottomPart">
         <el-pagination
@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import { listJobs } from '@/api/workflow/user'
+import { listRoles } from '@/api/workflow/user'
 
 export default {
     data(){
@@ -51,12 +51,12 @@ export default {
                 pageSize: 10
             },
             currentRow: null,
-            jobLists: [],
+            roleLists: [],
             total: 0,
         }
     },
     created(){
-        this.getJobs()
+        this.getRoles()
     },
     methods:{
         dialogClose(){
@@ -72,28 +72,28 @@ export default {
             this.currentRow = val;
             console.log("选中项信息", this.currentRow)
         },
-        //获取岗位列表
-        getJobs(){
+        //获取角色列表
+        getRoles(){
             // let param = {
             //     current: 1,
             //     pageSize: 10
             // }
-            console.log("查询岗位参数", this.queryParams)
-            listJobs(this.queryParams).then(res => {
-                this.jobLists = res.data.records;
+            console.log("查询角色参数", this.queryParams)
+            listRoles(this.queryParams).then(res => {
+                this.roleLists = res.data.records;
                 this.total = res.data.total;
-                console.log("获取岗位列表", res)
+                console.log("获取角色列表", res)
             })
         },
         handleSizeChange(val) {
             console.log(`每页 ${val} 条`);
             this.queryParams.pageSize = val
-            this.getJobs()
+            this.getRoles()
         },
         handleCurrentChange(val) {
             console.log(`当前页: ${val}`);
             this.queryParams.current = val
-            this.getJobs()
+            this.getRoles()
         },
         handleSubmit(){
             //把选中行信息反显

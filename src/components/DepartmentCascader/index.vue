@@ -16,6 +16,8 @@
 
 <script>
 // import { ElNotification } from 'element-plus';
+import { listDepts } from '@/api/workflow/user'
+
 export default {
   name: 'departmentCascader',
   props:{
@@ -44,15 +46,20 @@ export default {
         code: '', //默认不传返回所有部门树信息
         parentCode: 0 //默认传0返回所有部门树信息
       }
-      var res = await this.$API.dept.getDeptTree.post(data);
-      if(res.code == 200){
-					this.depts = res.data || []
-				}else{
-					// ElNotification.error({
-					// 	title: '请求错误',
-					// 	message: res.message
-					// });
-				}
+      console.log("部门查询param", data)
+      listDepts(data).then(res => {
+        console.log("查询部门返回", res)
+        this.depts = res.data || []
+      })
+      // var res = await this.$API.dept.getDeptTree.post(data);
+      // if(res.code == 200){
+			// 		this.depts = res.data || []
+			// 	}else{
+			// 		// ElNotification.error({
+			// 		// 	title: '请求错误',
+			// 		// 	message: res.message
+			// 		// });
+			// 	}
     },
     handleChange(){
       this.$emit('sendDepartmentId',this.departmentId)

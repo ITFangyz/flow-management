@@ -57,7 +57,7 @@ export default {
         return {
             initFormData: {},   //表单初始数据
             processParams:{
-                variables:null
+                // variables:null
             },
             formDataCopy:deepClone(this.formConf),
             dynamicData: {
@@ -128,7 +128,8 @@ export default {
             // 获取数据成功
             Object.assign(this.processParams, res)
             // this.processParams = JSON.stringify(res)
-            this.processParams.variables = JSON.stringify(this.formDataCopy)
+            // this.processParams.variables = JSON.stringify(this.formDataCopy)
+            this.processParams.formJson = JSON.stringify(this.formDataCopy)
             //传递数据给父组件，做后续流程发起处理
             this.$emit('submit', this.processParams)
         }).catch(err => {

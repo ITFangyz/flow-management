@@ -3,11 +3,13 @@
         <!-- <div class="header">
             header
         </div> -->
+        <button @click="getFlowData">获取我发起的流程记录</button>
+        <button @click="getFlowData">获取我可以发起的流程</button>
         <el-tabs v-model="activeName">
             <el-tab-pane label="发起审批" name="first">
                 <div class="start-main">
                     <div class="start-left">
-                        <div class="left-item" v-for="(item, index) in itemList" :key="index" @click="switchQuickEntey(item)">
+                        <div class="left-item" v-for="(item, index) in itemList" :key="index" @click="switchQuickEntry(item)">
                             {{ item.title}}
                         </div>
                     </div>
@@ -99,6 +101,8 @@
 
 <script>
 import messageList from '@/components/messageList/index'
+import { listOwnProcess } from '@/api/workflow/process';
+
 export default {
     components:{
         messageList,
@@ -263,9 +267,19 @@ export default {
             console.log("点击子菜单", this.operateType)
         },
         //切换快捷入口区域
-        switchQuickEntey(value){
+        switchQuickEntry(value){
             console.log('快捷入口', value)
             this.quickEntryList = value.data;
+        },
+        // 获取我发起的流程
+        getFlowData(){
+            let param = {
+                pageSize: 10,
+                current: 1,
+            }
+            listOwnProcess(param).then(res => {
+                console.log("我的流程记录", res)
+            })
         }
     }
 }
