@@ -6,7 +6,6 @@
         <el-radio label="USERS">指定用户</el-radio>
         <el-radio label="ROLES">角色</el-radio>
         <el-radio label="DEPTS">部门</el-radio>
-        <el-radio label="JOBS">岗位</el-radio>
         <el-radio label="INITIATOR">发起人</el-radio>
       </el-radio-group>
     </el-row>
@@ -20,12 +19,12 @@
         </div>
       </div>
       <div v-if="dataType === 'ROLES'">
-        <el-select v-model="roleIds" multiple size="mini" placeholder="请选择 角色" @change="changeSelectRoles">
+        <el-select v-model="roleIds" multiple size="mini" placeholder="请选择角色" @change="changeSelectRoles">
           <el-option
             v-for="item in roleOptions"
-            :key="item.roleId"
+            :key="item.id"
             :label="item.roleName"
-            :value="`ROLE${item.roleId}`"
+            :value="`ROLE${item.id}`"
             :disabled="item.status === 1">
           </el-option>
         </el-select>
@@ -45,16 +44,6 @@
           @checked-change="checkedDeptChange">
         </tree-select>
       </div>
-      <div v-if="dataType === 'JOBS'">
-        <!-- <el-tag v-for="userText in selectedUser.text" :key="userText" effect="plain">
-          {{userText}}
-        </el-tag> -->
-        <div class="element-drawer__button">
-          <el-button size="mini" type="primary" icon="el-icon-plus" @click="onSelectJobs()">选择岗位</el-button>
-        </div>
-        
-       
-      </div>
     </el-row>
     <el-row>
       <div v-show="showMultiFlog">
@@ -69,21 +58,9 @@
     </el-row>
 
     <!-- 候选用户弹窗 -->
-    <!-- <el-dialog title="候选用户" :visible.sync="userOpen" width="60%" append-to-body>
-      <user-select v-if="userOpen"></user-select>
-    </el-dialog> -->
-
-    <!-- 用户弹窗 -->
-    <user-select v-if="userOpen" @getUserSelected="getUserSelected"></user-select>
-    
-    <!-- 岗位弹窗 -->
-    <job-select v-if="dialogJobVisible" @getJobSelected="getJobSelected"></job-select>
-
-    <!-- 角色弹窗 -->
-    <role-select v-if="dialogJobVisible" @getRoleSelected="getRoleSelected"></role-select>
-
-    <!-- <el-dialog title="候选用户" :visible.sync="userOpen" width="60%" append-to-body>
+    <el-dialog title="候选用户" :visible.sync="userOpen" width="60%" append-to-body>
       <el-row type="flex" :gutter="20">
+        <!--部门数据-->
         <el-col :span="7">
           <el-card shadow="never" style="height: 100%">
             <div slot="header">
@@ -100,7 +77,7 @@
               />
               <el-tree
                 :data="deptOptions"
-                :props="deptProps"
+                :props="userDeptProps"
                 :expand-on-click-node="false"
                 :filter-node-method="filterNode"
                 ref="tree"
@@ -113,12 +90,13 @@
         <el-col :span="17">
           <el-table ref="multipleTable" height="600" :data="userTableList" border @selection-change="handleSelectionChange">
             <el-table-column type="selection" width="50" align="center" />
-            <el-table-column label="用户名" align="center" prop="nickName" />
-            <el-table-column label="部门" align="center" prop="dept.deptName" />
+            <el-table-column label="用户名" align="center" prop="username" />
+            <el-table-column label="ID" align="center" prop="id" />
+            <!-- <el-table-column label="部门" align="center" prop="dept.deptName" /> -->
           </el-table>
           <pagination
             :total="userTotal"
-            :page.sync="queryParams.pageNum"
+            :page.sync="queryParams.current"
             :limit.sync="queryParams.pageSize"
             @pagination="getUserList"
           />
@@ -128,21 +106,17 @@
         <el-button type="primary" @click="handleTaskUserComplete">确 定</el-button>
         <el-button @click="userOpen = false">取 消</el-button>
       </div>
-    </el-dialog> -->
+    </el-dialog>
   </div>
 
 </template>
 
 <script>
-import { listUser } from "@/api/system/user";
-import { listRoles } from "@/api/workflow/user";
-import { listRole } from "@/api/system/role";
-import { treeselect } from '@/api/workflow/user'
+import { treeselect, listRoles, listUsers } from "@/api/workflow/user";
 
+// import { listUser } from "@/api/system/user";
+// import { treeselect } from '@/api/system/dept'
 import TreeSelect from "@/components/TreeSelect";
-import jobSelect from '@/components/jobSelect'
-import userSelect from '@/components/userSelect'
-import roleSelect from '@/components/roleSelect'
 
 const userTaskForm = {
   dataType: '',
@@ -150,6 +124,7 @@ const userTaskForm = {
   candidateUsers: '',
   candidateGroups: '',
   text: '',
+  taskProperty: '',
   // dueDate: '',
   // followUpDate: '',
   // priority: ''
@@ -170,12 +145,7 @@ export default {
     id: String,
     type: String
   },
-  components: {
-    TreeSelect,
-    jobSelect,
-    userSelect,
-    roleSelect
-},
+  components: { TreeSelect },
   data() {
     return {
       loading: false,
@@ -184,10 +154,13 @@ export default {
         ids: [],
         text: []
       },
-      dialogJobVisible: false,  //岗位弹窗
-      userOpen: false,  //用户弹窗
+      userOpen: false,
       deptName: undefined,
       deptOptions: [],
+      userDeptProps:{
+        children: "children",
+        label: "name"
+      },
       deptProps: {
         children: "children",
         label: "label"
@@ -202,7 +175,9 @@ export default {
       deptIds: [],
       // 查询参数
       queryParams: {
-        deptId: undefined
+        departmentId: undefined,
+        current: 1,
+        pageSize: 10,
       },
       showMultiFlog: false,
       multiLoopType: 'Null',
@@ -212,6 +187,7 @@ export default {
     id: {
       immediate: true,
       handler() {
+        console.log("userTask=======", window)
         this.bpmnElement = window.bpmnInstances.bpmnElement;
         this.$nextTick(() => this.resetTaskForm());
       }
@@ -230,8 +206,6 @@ export default {
       this.dataType = bpmnElementObj['dataType'];
       if (this.dataType === 'USERS') {
         let userIdData = bpmnElementObj['assignee'] || bpmnElementObj['candidateUsers'];
-
-        console.log("selectedUser===", this.selectedUser, "bpmnElementObj========", bpmnElementObj)
         let userText = bpmnElementObj['text'] || [];
         if (userIdData && userIdData.length > 0 && userText && userText.length > 0) {
           this.selectedUser.ids = userIdData?.toString().split(',');
@@ -248,16 +222,12 @@ export default {
         }
         this.showMultiFlog = true;
       } else if (this.dataType === 'DEPTS') {
-        
         this.getDeptTreeData().then(() => {
           let deptIdData = bpmnElementObj['candidateGroups'] || [];
           if (deptIdData && deptIdData.length > 0) {
             this.deptIds = deptIdData.split(',');
           }
         });
-        this.showMultiFlog = true;
-      } else if (this.dataType === 'JOBS') {
-        console.log("选择岗位")
         this.showMultiFlog = true;
       }
       this.getElementLoop(bpmnElementObj);
@@ -279,6 +249,7 @@ export default {
       for (let key in userTaskForm) {
           taskAttr[key] = userTaskForm[key];
       }
+      console.log("taskAttr===", taskAttr)
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, taskAttr);
     },
     /**
@@ -307,7 +278,8 @@ export default {
     getDeptTreeData() {
       function refactorTree(data) {
         return data.map(node => {
-          let treeData = { id: `DEPT${node.id}`, label: node.name, parentId: node.parentId, weight: node.weight };
+          console.log("部门树   node==", node)
+          let treeData = { id: `DEPT${node.id}`, label: node.name, parentId: node.parentId, weight: node.weight, departmentId: `DEPT${node.departmentId}` };
           if (node.children && node.children.length > 0) {
             treeData.children = refactorTree(node.children);
           }
@@ -318,6 +290,8 @@ export default {
         if (!this.deptTreeData || this.deptTreeData.length <= 0) {
           this.getDeptOptions().then(() => {
             this.deptTreeData = refactorTree(this.deptOptions);
+            console.log("this.deptTreeData====", this.deptTreeData)
+            console.log("this.deptOptions====", this.deptOptions)
             resolve()
           }).catch(() => {
             reject()
@@ -336,27 +310,33 @@ export default {
           current: 1,
           pageSize: 10,
         }
-        listRoles(param).then(response => {
-          console.log("查询角色列表返回", response)
+        listRoles(this.queryParams).then(response => {
+          console.log("角色列表返回", response)
+          this.roleOptions = response.data.records
         });
-        // listRole().then(response => this.roleOptions = response.rows);
       }
     },
     /** 查询用户列表 */
     getUserList() {
-      listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
-        this.userTableList = response.rows;
-        this.userTotal = response.total;
+      // listUser(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
+      // let param = {
+      //   current: 1,
+      //   pageSize: 20,
+      // }
+      listUsers(this.queryParams).then(response => {
+        this.userTableList = response.data.records;
+        this.userTotal = response.data.total;
       });
     },
     // 筛选节点
     filterNode(value, data) {
+      console.log("filterNode===========", value, data)
       if (!value) return true;
       return data.label.indexOf(value) !== -1;
     },
     // 节点单击事件
     handleNodeClick(data) {
-      this.queryParams.deptId = data.id;
+      this.queryParams.departmentId = data.departmentId;
       this.getUserList();
     },
     // 关闭标签
@@ -372,73 +352,48 @@ export default {
       this.selectedUserDate = []
       this.$refs.multipleTable?.clearSelection();
       this.getDeptOptions();
-
       this.userOpen = true;
-    },
-    //选择岗位
-    onSelectJobs(){
-      this.dialogJobVisible = true;
     },
     handleTaskUserComplete() {
       if (!this.selectedUserDate || this.selectedUserDate.length <= 0) {
         this.$modal.msgError('请选择用户');
         return;
       }
-      this.selectedUser.text = this.selectedUserDate.map(k => k.nickName) || [];
+
+      console.log("选中用户时数据", this.selectedUserDate)
+      this.selectedUser.text = this.selectedUserDate.map(k => k.username) || [];
       if (this.selectedUserDate.length === 1) {
         let data = this.selectedUserDate[0];
-        userTaskForm.assignee = data.userId;
-        userTaskForm.text = data.nickName;
+        userTaskForm.assignee = data.id;
+        userTaskForm.text = data.username;
         userTaskForm.candidateUsers = null;
+        // userTaskForm.priority = 'null'
         this.showMultiFlog = false;
         this.multiLoopType = 'Null';
         this.changeMultiLoopType(this.multiLoopType);
       } else {
-        userTaskForm.candidateUsers = this.selectedUserDate.map(k => k.userId).join() || null;
-        userTaskForm.text = this.selectedUserDate.map(k => k.nickName).join() || null;
+        userTaskForm.candidateUsers = this.selectedUserDate.map(k => k.id).join() || null;
+        userTaskForm.text = this.selectedUserDate.map(k => k.username).join() || null;
         userTaskForm.assignee = null;
+        // userTaskForm.priority = '2'
         this.showMultiFlog = true;
       }
       this.updateElementTask()
       this.userOpen = false;
     },
-
-    // 岗位组件选中
-    getJobSelected(info){
-      this.userOpen = false
-      this.dialogJobVisible = false
-
-      console.log("岗位组件返回", info)
-    },
-    // 用户组件选中
-    getUserSelected(info){
-      // userTaskForm.assignee = info.id;
-      // userTaskForm.text = info.nickName;
-      userTaskForm.assignee = "1538774400275763202";
-      userTaskForm.text = "测试";
-      userTaskForm.candidateUsers = null;
-      this.showMultiFlog = false;
-      this.multiLoopType = 'Null';
-      this.changeMultiLoopType(this.multiLoopType);
-
-      this.updateElementTask()
-      this.userOpen = false
-
-      console.log("用户组件返回", info)
-    },
     changeSelectRoles(val) {
       userTaskForm.candidateGroups = val.join() || null;
-      let textArr = this.roleOptions.filter(k => val.indexOf(`ROLE${k.roleId}`) >= 0);
+      let textArr = this.roleOptions.filter(k => val.indexOf(`ROLE${k.id}`) >= 0);
       userTaskForm.text = textArr?.map(k => k.roleName).join() || null;
       this.updateElementTask();
     },
     checkedDeptChange(checkedIds, checkedData) {
-      console.log("选中项改变", "checkedIds", checkedIds, "checkedData", checkedData)
+      console.log("checkedDeptChange=====", checkedIds, checkedData)
       if (checkedIds && checkedIds.length > 0) {
         this.deptIds = checkedIds;
       }
       if (checkedData && checkedData.length > 0) {
-        userTaskForm.candidateGroups = checkedData.map(k => k.id).join() || null
+        userTaskForm.candidateGroups = checkedData.map(k => k.departmentId).join() || null
         userTaskForm.text = checkedData.map(k => k.label).join() || null
         this.updateElementTask();
       }
@@ -447,6 +402,8 @@ export default {
       // 清空 userTaskForm 所有属性值
       Object.keys(userTaskForm).forEach(key => userTaskForm[key] = null);
       userTaskForm.dataType = val;
+
+      console.log("this.selectedUser=======", this.selectedUser)
       if (val === 'USERS') {
         if (this.selectedUser && this.selectedUser.ids && this.selectedUser.ids.length > 0) {
           if (this.selectedUser.ids.length === 1) {
@@ -458,9 +415,10 @@ export default {
         }
       } else if (val === 'ROLES') {
         this.getRoleOptions();
+        console.log("切换时this.roleIds===", this.roleIds)
         if (this.roleIds && this.roleIds.length > 0) {
           userTaskForm.candidateGroups = this.roleIds.join() || null;
-          let textArr = this.roleOptions.filter(k => this.roleIds.indexOf(`ROLE${k.roleId}`) >= 0);
+          let textArr = this.roleOptions.filter(k => this.roleIds.indexOf(`ROLE${k.id}`) >= 0);
           userTaskForm.text = textArr?.map(k => k.roleName).join() || null;
         }
       } else if (val === 'DEPTS') {
@@ -484,9 +442,6 @@ export default {
           })
           userTaskForm.text = textArr?.map(k => k.label).join() || null;
         }
-      } else if (val === 'JOBS') {
-        // this.dialogJobVisible = true
-        console.log("选择岗位按钮")
       } else if (val === 'INITIATOR') {
         userTaskForm.assignee = "${initiator}";
         userTaskForm.text = "流程发起人";
@@ -523,11 +478,13 @@ export default {
       if (type === "SequentialMultiInstance") {
         this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", { isSequential: false });
         completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: '${nrOfCompletedInstances >= nrOfInstances}' });
+        userTaskForm.taskProperty = 1
       }
       // 或签
       if (type === "ParallelMultiInstance") {
         this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
         completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: '${nrOfCompletedInstances > 0}' });
+        userTaskForm.taskProperty = 2
       }
       // 更新多实例配置
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
@@ -540,6 +497,8 @@ export default {
         elementVariable: 'assignee',
         completionCondition
       });
+
+      this.updateElementTask();
     },
   }
 };

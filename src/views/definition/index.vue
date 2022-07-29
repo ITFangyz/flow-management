@@ -122,7 +122,7 @@ export default {
       dialogImageUrl: '', //上传图标url
       dialogVisible: false, //弹窗是否可见
       designerForm:{},
-      activeStep: 2,
+      activeStep: 0,
       basicInfoForm: {},
       categoryOptions: [],
       loadIndex: 0,
@@ -233,9 +233,16 @@ export default {
     },
     onClose () {
       // this.$emit('close');
-      this.$router.push({
-        path: '/process',
-      })
+
+      // this.$router.push({
+      //   path: '/process',
+      // })
+      if (this.$route.query.processId){
+        this.$router.push({
+          path: '/process',
+        })
+      }
+      // this.$router.go(-1)
     },
     onPrevious() {
       this.activeStep--;
@@ -293,18 +300,18 @@ export default {
         this.dto.procName = this.designerForm.processName
         this.dto.procRemark = this.designerForm.procRemark
         this.dto.procStatus = '1'
-        // this.dto.procTypeId = this.designerForm.category
-        this.dto.procTypeId = '1542305287642791937'   //暂时写死
+        this.dto.procTypeId = this.designerForm.category
+        // this.dto.procTypeId = '1542305287642791937'   //暂时写死
 
         this.dto.flowableForm = this.flowableForm
         this.dto.scopes = [
           {
-              "relationId": 1538774400275763200,
-              "relationType": 3
+            relationId: 0,    // 关联Id
+            relationType: 4   // 1=岗位,2=部门,3=用户,4=全部
           }
         ]
 
-        console.log("新增流程设计param", this.dto)
+        console.log("新增或修改流程设计param", this.dto)
         if(!this.$route.query.processId){
           saveXml(this.dto).then(res => {
             console.log("新增流程成功res", res)

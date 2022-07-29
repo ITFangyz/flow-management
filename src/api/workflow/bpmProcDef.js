@@ -4,7 +4,7 @@ import request from '@/http/request'
 export function listProcess(query) {
     console.log("查询流程分页参数", query)
     return request({
-        url: '/bpmProcDef/getBpmProcDefPage',
+        url: '/api/adapter-baseapp/admin/bpmProcDef/getBpmProcDefPage',
         method: 'post',
         data: query
     })
@@ -14,7 +14,7 @@ export function listProcess(query) {
 export function processAdd(query) {
     console.log("新增流程参数", query)
     return request({
-        url: '/bpmProcDef/add',
+        url: '/api/adapter-baseapp/admin/bpmProcDef/add',
         method: 'post',
         data: query
     })
@@ -24,7 +24,7 @@ export function processAdd(query) {
 export function processDel(id) {
     console.log("删除参数", id)
     return request({
-        url: '/bpmProcDef/delete/' + id,
+        url: '/api/adapter-baseapp/admin/bpmProcDef/delete/' + id,
         method: 'get',
         params: id
     })
@@ -34,7 +34,7 @@ export function processDel(id) {
 export function processDetail(id) {
     console.log("查询详情参数", id)
     return request({
-        url: `/bpmProcDef/details/` + id,
+        url: `/api/adapter-baseapp/admin/bpmProcDef/details/` + id,
         method: 'get',
         params: id
     })
@@ -44,7 +44,7 @@ export function processDetail(id) {
 export function readProcessXml(id) {
     console.log("查询详情参数", id)
     return request({
-        url: `/bpmProcDef/readProcDefXml/` + id,
+        url: `/api/adapter-baseapp/admin/bpmProcDef/readProcDefXml/` + id,
         method: 'get',
         params: id
     })
@@ -54,7 +54,7 @@ export function readProcessXml(id) {
 export function readProcessImg(id) {
     console.log("读取流程进度图片参数", id)
     return request({
-        url: `/bpmProcDef/readProcImage/` + id,
+        url: `/api/adapter-baseapp/admin/bpmProcDef/readProcImage/` + id,
         method: 'get',
         params: id
     })
@@ -64,7 +64,7 @@ export function readProcessImg(id) {
 export function processUpdate(query) {
     console.log("修改流程定义", query)
     return request({
-        url: '/bpmProcDef/update',
+        url: '/api/adapter-baseapp/admin/bpmProcDef/update',
         method: 'post',
         data: query
     })
@@ -74,7 +74,7 @@ export function processUpdate(query) {
 export function updateProcessStatus(query) {
     console.log("修改流程状态", query)
     return request({
-        url: '/bpmProcDef/updateProcStatus',
+        url: '/api/adapter-baseapp/admin/bpmProcDef/updateProcStatus',
         method: 'post',
         data: query
     })

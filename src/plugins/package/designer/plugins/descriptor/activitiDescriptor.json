@@ -379,6 +379,11 @@
           "type": "String"
         },
         {
+          "name": "taskProperty",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
           "name": "multiinstance_condition",
           "isAttr": true,
           "type": "String"

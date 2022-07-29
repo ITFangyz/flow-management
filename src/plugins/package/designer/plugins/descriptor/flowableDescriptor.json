@@ -385,6 +385,11 @@
           "type": "String"
         },
         {
+          "name": "taskProperty",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
           "name": "priority",
           "isAttr": true,
           "type": "String"

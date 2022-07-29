@@ -16,6 +16,10 @@
                 <el-menu-item index="4">流程管理</el-menu-item>
                 <el-menu-item index="5">表单设计</el-menu-item>
                 <el-menu-item index="6">流程详情</el-menu-item>
+                <el-menu-item index="7">我的流程记录</el-menu-item>
+                <el-menu-item index="8">待办任务</el-menu-item>
+                <el-menu-item index="9">已办任务</el-menu-item>
+                <el-menu-item index="10">抄送我的</el-menu-item>
             </el-menu>
 
         </el-header>
@@ -64,7 +68,7 @@ export default {
     data(){
         return{
             Msg:'首页',
-            activeIndex: '4',
+            activeIndex: '2',
         }
     },
     methods: {
@@ -116,6 +120,22 @@ export default {
                     case '6' :
                         console.log("toprocessDetail")
                         this.$router.push('/processDetail')
+                        break;
+                    case '7' :
+                        console.log("toOwn")
+                        this.$router.push('/own')
+                        break;
+                    case '8' :
+                        console.log("toTodo")
+                        this.$router.push('/todo')
+                        break;
+                    case '9' :
+                        console.log("toFinished")
+                        this.$router.push('/finished')
+                        break;
+                    case '10' :
+                        console.log("toCopy")
+                        this.$router.push('/copy')
                         break;
                     default:
                         return

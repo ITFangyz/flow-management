@@ -65,6 +65,7 @@ export default {
           di: { id: `${this.elementBaseInfo[key]}_di` }
         });
       } else {
+        console.log("右侧面板名称", this.bpmnElement, attrObj)
         window.bpmnInstances.modeling.updateProperties(this.bpmnElement, attrObj);
       }
     }

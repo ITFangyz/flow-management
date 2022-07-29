@@ -3,14 +3,13 @@
         <!-- <div class="header">
             header
         </div> -->
-        <button @click="getFlowData">获取我发起的流程记录</button>
-        <button @click="getFlowData">获取我可以发起的流程</button>
+
         <el-tabs v-model="activeName">
             <el-tab-pane label="发起审批" name="first">
                 <div class="start-main">
                     <div class="start-left">
-                        <div class="left-item" v-for="(item, index) in itemList" :key="index" @click="switchQuickEntry(item)">
-                            {{ item.title}}
+                        <div class="left-item" v-for="(item, index) in categoryList" :key="index" @click="switchQuickEntry(item)">
+                            {{ item.procTypeName}}
                         </div>
                     </div>
                     <div class="start-right">
@@ -22,7 +21,7 @@
                                 </div>
                                 <!-- <el-avatar icon="el-icon-s-opportunity" size="small"></el-avatar> -->
                                 <div style="margin-left:10px">
-                                    {{item.title}}
+                                    {{item.procName}}
                                 </div>
                             </div>
                             <!-- <el-col :span="8">
@@ -58,8 +57,9 @@
                         default-active="2"
                         class="el-menu-vertical-demo"
                         @open="handleOpen"
-                        @close="handleClose">
-                        <el-submenu index="1">
+                        @close="handleClose"
+                        @select="menuSelect">
+                        <!-- <el-submenu index="1">
                             <template slot="title">
                             <i class="el-icon-location"></i>
                             <span>待办</span>
@@ -78,22 +78,26 @@
                                 {{item.title}}
                                 <el-badge :value="item.data.length" class="item" type="primary"></el-badge>
                             </el-menu-item>
-                        </el-submenu>
-                        <!-- <el-menu-item index="2">
+                        </el-submenu> -->
+                        <el-menu-item index="todo">
+                            <i class="el-icon-location"></i>
+                            <span slot="title">待办</span>
+                        </el-menu-item>
+                        <el-menu-item index="done">
                             <i class="el-icon-menu"></i>
                             <span slot="title">已办</span>
-                        </el-menu-item> -->
-                        <el-menu-item index="3">
-                            <i class="el-icon-document"></i>
-                            <span slot="title">抄送我</span>
                         </el-menu-item>
-                        <el-menu-item index="4">
+                        <el-menu-item index="copeMe">
+                            <i class="el-icon-document"></i>
+                            <span slot="title">抄送我的</span>
+                        </el-menu-item>
+                        <el-menu-item index="launch">
                             <i class="el-icon-setting"></i>
-                            <span slot="title">发起</span>
+                            <span slot="title">我发起的</span>
                         </el-menu-item>
                     </el-menu>
                 </div>
-                <message-list :listData="listData" :operateType="operateType" class="list-main"></message-list>
+                <message-list :typeData="listData" :operateType="operateType" class="list-main"></message-list>
             </el-tab-pane>
         </el-tabs>
     </div>
@@ -101,7 +105,9 @@
 
 <script>
 import messageList from '@/components/messageList/index'
-import { listOwnProcess } from '@/api/workflow/process';
+import { listMyProcModelPage } from '@/api/workflow/process';
+import { listTodoProcess } from '@/api/workflow/task';
+import { listCategory } from "@/api/workflow/category";
 
 export default {
     components:{
@@ -109,6 +115,12 @@ export default {
     },
     data(){
         return{
+            categoryList:[],    //流程分类列表
+            queryParams:{
+                current: 1,
+                pageSize: 20,
+                procTypeCode: '',
+            },
             itemList:{
                 personnelList:{
                     title: '人事',
@@ -254,7 +266,35 @@ export default {
     computed:{
         
     },
+    created(){
+        this.getCanLaunchProcess();
+        this.getList();
+    },
     methods:{
+        menuSelect(index){
+            console.log("当前选中菜单项", index)
+            this.listData = index
+        },
+        getTodoList(){
+            listTodoProcess(this.queryParams).then(response => {
+                this.todoList = response.data.records;
+                this.total = response.data.total;
+                this.loading = false;
+            });
+        },
+        //获取流程分类列表
+        getList(){
+            console.log("获取分类列表信息")
+            let param= {
+                current: 1,
+                pageSize: 20,
+            }
+            listCategory(param).then(response => {
+                console.log("获取列表信息返回====", response)
+                this.categoryList = response.data.records;
+                // this.total = response.data.total;
+            });
+        },
         handleOpen(key, keyPath) {
             console.log(key, keyPath);
         },
@@ -269,18 +309,19 @@ export default {
         //切换快捷入口区域
         switchQuickEntry(value){
             console.log('快捷入口', value)
-            this.quickEntryList = value.data;
+            this.queryParams.procTypeCode = value.procTypeCode
+            listMyProcModelPage(this.queryParams).then(res => {
+                console.log("我可以发起的流程记录", res)
+                this.quickEntryList = res.data.records;
+            })
+            // this.quickEntryList = value.data;
         },
         // 获取我发起的流程
-        getFlowData(){
-            let param = {
-                pageSize: 10,
-                current: 1,
-            }
-            listOwnProcess(param).then(res => {
-                console.log("我的流程记录", res)
+        getCanLaunchProcess(){
+            listMyProcModelPage(this.queryParams).then(res => {
+                console.log("我可以发起的流程记录", res)
             })
-        }
+        },
     }
 }
 </script>

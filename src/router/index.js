@@ -47,6 +47,31 @@ export default new Router({
                     name: 'processDetail',
                     component: (resolve) => require(['@/views/process/processDetail'], resolve),
                 },
+                {
+                    path: '/own',
+                    name: 'own',
+                    component: (resolve) => require(['@/views/work/own'], resolve),
+                },
+                {
+                    path: '/todo',
+                    name: 'todo',
+                    component: (resolve) => require(['@/views/work/todo'], resolve),
+                },
+                {
+                    path: '/detail',
+                    name: 'detail',
+                    component: (resolve) => require(['@/views/work/detail'], resolve),
+                },
+                {
+                    path: '/finished',
+                    name: 'finished',
+                    component: (resolve) => require(['@/views/work/finished'], resolve),
+                },
+                {
+                    path: '/copy',
+                    name: 'copy',
+                    component: (resolve) => require(['@/views/work/copy'], resolve),
+                },
             ]
         },
         {

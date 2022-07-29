@@ -3,7 +3,7 @@ import request from '@/http/request'
 // 查询流程定义列表
 export function listDefinition(query) {
   return request({
-    url: '/workflow/definition/list',
+    url: '/api/adapter-baseapp/admin/workflow/definition/list',
     method: 'get',
     params: query
   })
@@ -12,7 +12,7 @@ export function listDefinition(query) {
 // 查询指定流程发布的版本列表
 export function publishList(query) {
   return request({
-    url: '/workflow/definition/publishList',
+    url: '/api/adapter-baseapp/admin/workflow/definition/publishList',
     method: 'get',
     params: query
   })
@@ -20,42 +20,42 @@ export function publishList(query) {
 
 
 // 部署流程实例
-export function definitionStart(procDefId,data) {
+export function definitionStart(procDefId,params) {
   return request({
-    url: '/workflow/definition/start/' + procDefId,
+    url: '/api/adapter-baseapp/admin/workflow/definition/start/' + procDefId,
     method: 'post',
-    data: data
+    data: params
   })
 }
 
 // 获取流程变量
 export function getProcessVariables(taskId) {
   return request({
-    url: '/workflow/task/processVariables/' + taskId,
+    url: '/api/adapter-baseapp/admin/workflow/task/processVariables/' + taskId,
     method: 'get'
   })
 }
 
 // 激活/挂起流程
-export function updateState(params) {
+export function updateState(query) {
   return request({
-    url: '/workflow/definition/updateState',
+    url: '/api/adapter-baseapp/admin/workflow/definition/updateState',
     method: 'put',
-    params: params
+    params: query
   })
 }
 
 // 读取xml文件
 export function readXml(definitionId) {
   return request({
-    url: '/workflow/definition/readXml/' + definitionId,
+    url: '/api/adapter-baseapp/admin/workflow/definition/readXml/' + definitionId,
     method: 'get'
   })
 }
 // 读取image文件
-export function readImage(deployId) {
+export function readImage(id) {
   return request({
-    url: '/workflow/definition/readImage/' + deployId,
+    url: '/api/adapter-baseapp/admin/bpmProcDef/readProcImage/' + id,
     method: 'get'
   })
 }
@@ -63,25 +63,25 @@ export function readImage(deployId) {
 // 读取image文件
 export function getFlowViewer(procInsId) {
   return request({
-    url: '/workflow/task/flowViewer/' + procInsId,
+    url: '/api/adapter-baseapp/admin/workflow/task/flowViewer/' + procInsId,
     method: 'get'
   })
 }
 
 // 读取xml文件
-export function saveXml(data) {
-  console.log("保存xml文件参数", data)
+export function saveXml(params) {
+  console.log("保存xml文件参数", params)
   return request({
-    url: '/bpmProcDef/add',
+    url: '/api/adapter-baseapp/admin/bpmProcDef/add',
     method: 'post',
-    data: data
+    data: params
   })
 }
 
 // 删除流程定义
 export function delDeployment(query) {
   return request({
-    url: '/workflow/definition/delete/',
+    url: '/api/adapter-baseapp/admin/workflow/definition/delete/',
     method: 'delete',
     params: query
   })
@@ -90,7 +90,7 @@ export function delDeployment(query) {
 // 导出流程定义
 export function exportDeployment(query) {
   return request({
-    url: '/system/deployment/export',
+    url: '/api/adapter-baseapp/admin/system/deployment/export',
     method: 'get',
     params: query
   })

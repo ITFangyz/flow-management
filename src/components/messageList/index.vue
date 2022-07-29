@@ -1,7 +1,7 @@
 <template>
     <div class="main">
         
-        <div class="center">
+        <div class="center" v-infinite-scroll="loadDataList">
             <div class="header">
                 <div>时间排序</div>
                 <div class="showType">
@@ -16,23 +16,23 @@
             <div class="list" v-show="showType == 'detail' && listData.length !== 0">
                 <div class="list-item" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
                     <el-row>
-                        <el-col :span="18"><div class="point-title">{{item.title}}</div></el-col>
+                        <el-col :span="18"><div class="point-title">{{item.procName}}</div></el-col>
                     </el-row>
                     <el-row align="middle" type="flex">
                         <el-col :span="6"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
-                        <el-col :span="6"><div class="point-title">{{item.name}}</div></el-col>
+                        <el-col :span="6"><div class="point-title">{{item.handlerName}}</div></el-col>
                         <el-col :span="12"><div class="usual">{{item.dept}}</div></el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="8"><div class="usual">申请理由</div></el-col>
-                        <el-col :span="16"><div class="point-title">{{item.applyReason}}</div></el-col>
+                        <el-col :span="16"><div class="point-title">{{item.innerProcDefId}}</div></el-col>
                     </el-row>
                     <el-row>
                         <el-col :span="8"><div class="usual">资产名称</div></el-col>
-                        <el-col :span="16"><div class="point-title">{{item.assets}}</div></el-col>
+                        <el-col :span="16"><div class="point-title">{{item.procNo}}</div></el-col>
                     </el-row>
                     <el-row>
-                        <el-col :span="24"><div class="usual">{{item.applyTime}}</div></el-col>
+                        <el-col :span="24"><div class="usual">{{item.crtTime}}</div></el-col>
                     </el-row>
                 </div>
             </div>
@@ -40,8 +40,8 @@
                 <div class="list-item-simple" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
                     <el-row align="middle" type="flex">
                         <el-col :span="4"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
-                        <el-col :span="8"><span class="point-title">{{item.name}}</span></el-col>
-                        <el-col :span="12"><span class="point-title">{{item.title}}</span></el-col>
+                        <!-- <el-col :span="8"><span class="point-title">{{item.name}}</span></el-col> -->
+                        <el-col :span="20"><span class="point-title">{{item.procName}}</span></el-col>
                     </el-row>
                     <!-- <div style="flex:1"><el-avatar icon="el-icon-user-solid"></el-avatar></div>
                     <div style="flex:2"><span class="point-title">{{item.name}}</span></div>
@@ -57,10 +57,13 @@
 
 <script>
 import messageDetail from '@/components/messageDetail/index'
+import { listTodoProcess, listFinishedProcess, listCopyProcess } from '@/api/workflow/task';
+import { listOwnProcess } from '@/api/workflow/process';
+
 export default {
     props:{
-        listData: {
-            type: Array,
+        typeData: {
+            // type: Array,
             required: false
         },
         operateType:{
@@ -73,14 +76,48 @@ export default {
     },
     data(){
         return{
+            queryParams:{
+                current: 1,
+                pageSize: 10
+            },
+            listData:[],
             showType:"detail",
             messageInfo:null,
         }
     },
     created(){
-        console.log("listData    created===========", this.listData)
+        console.log("listData    created===========", this.typeData)
+        if( this.typeData == 'todo'){
+            listTodoProcess(this.queryParams).then(response => {
+                this.listData = response.data.records;
+                this.total = response.data.total;
+                this.loading = false;
+            });
+        } else if(this.typeData == 'done'){
+            listFinishedProcess(this.queryParams).then(response => {
+                this.listData = response.data.records;
+                this.total = response.data.total;
+                this.loading = false;
+            });
+        } else if(this.typeData == 'copyMe'){
+            listCopyProcess(this.queryParams).then(response => {
+                this.listData = response.data.records;
+                this.total = response.data.total;
+                this.loading = false;
+            });
+        } else if(this.typeData == 'launch'){
+            listOwnProcess(this.queryParams).then(response => {
+                console.log("获取我的流程记录", response)
+                this.listData = response.data.records;
+                this.total = response.data.total;
+                this.loading = false;
+            });
+        }
     },
     methods:{
+        loadDataList(){
+            
+        },
         toDetail(value){
             console.log("显示详情", value)
             this.messageInfo = value

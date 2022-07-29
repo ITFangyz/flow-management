@@ -4,7 +4,7 @@ import request from '@/http/request'
 export function startProcess(query) {
   console.log("发起流程参数", query)
   return request({
-    url: '/bpmProcRecord/startProcess',
+    url: '/api/adapter-baseapp/admin/bpmProcRecord/startProcess',
     method: 'post',
     data: query
   })
@@ -13,7 +13,7 @@ export function startProcess(query) {
 // 我发起的流程记录
 export function listOwnProcess(query) {
   return request({
-    url: '/bpmProcRecord/myProcRecordList',
+    url: '/api/adapter-baseapp/admin/bpmProcRecord/myProcRecordList',
     method: 'post',
     data: query
   })
@@ -22,7 +22,7 @@ export function listOwnProcess(query) {
 // 我可以发起的流程
 export function listMyProcModelPage(query) {
   return request({
-    url: '/bpmProcRecord/listMyProcModelPage',
+    url: '/api/adapter-baseapp/admin/bpmProcRecord/listMyProcModelPage',
     method: 'post',
     data: query
   })
@@ -31,7 +31,7 @@ export function listMyProcModelPage(query) {
 // 获取流程的发起人
 export function getStartUserId(query) {
   return request({
-    url: '/bpmProcRecord/getStartUserId',
+    url: '/api/adapter-baseapp/admin/bpmProcRecord/getStartUserId',
     method: 'get',
     params: query
   })
@@ -40,7 +40,7 @@ export function getStartUserId(query) {
 // 获取流程编号
 export function getProcNo(query) {
   return request({
-    url: '/bpmProcRecord/getProcNo',
+    url: '/api/adapter-baseapp/admin/bpmProcRecord/getProcNo',
     method: 'get',
     params: query
   })
@@ -49,7 +49,7 @@ export function getProcNo(query) {
 // 任务节点及处理人信息
 export function getFlowTaskInfoList(query) {
   return request({
-    url: `/bpmProcRecord/getFlowTaskInfoList/` + query,
+    url: `/api/adapter-baseapp/admin/bpmProecRcord/getFlowTaskInfoList/` + query,
     method: 'post',
     data: query
   })

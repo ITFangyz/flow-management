@@ -30,8 +30,9 @@ Vue.component('Pagination', Pagination)
 import plugins from "./plugins/index"
 Vue.use(plugins)
 
-
+// 全局方法挂载
 Vue.prototype.resetForm = resetForm
+Vue.prototype.parseTime = parseTime
 
 Vue.prototype.msgSuccess = function (msg) {
   this.$message({ showClose: true, message: msg, type: "success" });
