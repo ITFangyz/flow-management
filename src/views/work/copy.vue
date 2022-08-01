@@ -41,6 +41,15 @@
       <el-table-column label="抄送编号" align="center" prop="innerProcDefId" />
       <el-table-column label="标题" align="center" prop="title" :show-overflow-tooltip="true" />
       <el-table-column label="流程名称" align="center" prop="procName" :show-overflow-tooltip="true" />
+      <el-table-column label="流程状态" align="center" width="100">
+        <template slot-scope="scope">
+          <!-- <el-tag v-if="scope.row.finishTime == null" size="mini">进行中</el-tag> -->
+          <el-tag v-if="scope.row.procStatus == 1" size="mini">审批中</el-tag>
+          <el-tag type="success" v-if="scope.row.procStatus == 2" size="mini">已完成</el-tag>
+          <el-tag type="danger" v-if="scope.row.procStatus == 3" size="mini">已拒绝</el-tag>
+          <el-tag type="warning" v-if="scope.row.procStatus == 4  " size="mini">已撤销</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="发起人" align="center" prop="sponsorName" />
       <el-table-column label="创建时间" align="center" prop="crtTime">
         <template slot-scope="scope">

@@ -5,7 +5,6 @@
       <el-radio-group v-model="dataType" @change="changeDataType">
         <el-radio label="USERS">指定用户</el-radio>
         <el-radio label="ROLES">角色</el-radio>
-        <el-radio label="JOBS">岗位</el-radio>
         <el-radio label="DEPTS">部门</el-radio>
         <el-radio label="INITIATOR">发起人</el-radio>
       </el-radio-group>
@@ -25,17 +24,6 @@
             v-for="item in roleOptions"
             :key="item.id"
             :label="item.roleName"
-            :value="`ROLE${item.id}`"
-            :disabled="item.status === 1">
-          </el-option>
-        </el-select>
-      </div>
-      <div v-if="dataType === 'JOBS'">
-        <el-select v-model="jobIds" multiple size="mini" placeholder="请选择岗位" @change="changeSelectJobs">
-          <el-option
-            v-for="item in jobOptions"
-            :key="item.id"
-            :label="item.name"
             :value="`ROLE${item.id}`"
             :disabled="item.status === 1">
           </el-option>
@@ -124,7 +112,7 @@
 </template>
 
 <script>
-import { treeselect, listRoles, listUsers, listJobs } from "@/api/workflow/user";
+import { treeselect, listRoles, listUsers } from "@/api/workflow/user";
 
 // import { listUser } from "@/api/system/user";
 // import { treeselect } from '@/api/system/dept'
@@ -136,6 +124,7 @@ const userTaskForm = {
   candidateUsers: '',
   candidateGroups: '',
   text: '',
+  // taskProperty: '',
   // dueDate: '',
   // followUpDate: '',
   // priority: ''
@@ -181,8 +170,6 @@ export default {
       userTotal: 0,
       selectedUserDate: [],
       roleOptions: [],
-      jobOptions: [],  // 岗位列表
-      jobIds: [], //选中岗位集合
       roleIds: [],
       deptTreeData: [],
       deptIds: [],
@@ -218,7 +205,7 @@ export default {
       this.clearOptionsData()
       this.dataType = bpmnElementObj['dataType'];
       if (this.dataType === 'USERS') {
-        let userIdData = bpmnElementObj['candidateUsers'] || bpmnElementObj['assignee'] ;
+        let userIdData = bpmnElementObj['assignee'] || bpmnElementObj['candidateUsers'];
         let userText = bpmnElementObj['text'] || [];
         if (userIdData && userIdData.length > 0 && userText && userText.length > 0) {
           this.selectedUser.ids = userIdData?.toString().split(',');
@@ -232,13 +219,6 @@ export default {
         let roleIdData = bpmnElementObj['candidateGroups'] || [];
         if (roleIdData && roleIdData.length > 0) {
           this.roleIds = roleIdData.split(',')
-        }
-        this.showMultiFlog = true;
-      } else if (this.dataType === 'JOBS') {
-        this.getJobOptions();
-        let jobIdData = bpmnElementObj['candidateGroups'] || [];
-        if (jobIdData && jobIdData.length > 0) {
-          this.jobIds = jobIdData.split(',')
         }
         this.showMultiFlog = true;
       } else if (this.dataType === 'DEPTS') {
@@ -260,7 +240,6 @@ export default {
       this.selectedUser.text = [];
       this.roleIds = [];
       this.deptIds = [];
-      this.jobIds = [];
     },
     /**
      * 跟新节点数据
@@ -323,30 +302,17 @@ export default {
       })
     },
     /**
-     * 查询角色下拉树结构
+     * 查询部门下拉树结构
      */
     getRoleOptions() {
       if (!this.roleOptions || this.roleOptions.length <= 0) {
         let param = {
           current: 1,
-          pageSize: 20,
+          pageSize: 10,
         }
         listRoles(this.queryParams).then(response => {
           console.log("角色列表返回", response)
           this.roleOptions = response.data.records
-        });
-      }
-    },
-    // 查询岗位列表
-    getJobOptions() {
-      if (!this.jobOptions || this.jobOptions.length <= 0) {
-        let param = {
-          current: 1,
-          pageSize: 20,
-        }
-        listJobs(this.queryParams).then(response => {
-          console.log("岗位列表返回", response)
-          this.jobOptions = response.data.records
         });
       }
     },
@@ -393,14 +359,15 @@ export default {
         this.$modal.msgError('请选择用户');
         return;
       }
+
       console.log("选中用户时数据", this.selectedUserDate)
-	  userTaskForm.dataType = 'USERS';
       this.selectedUser.text = this.selectedUserDate.map(k => k.username) || [];
       if (this.selectedUserDate.length === 1) {
         let data = this.selectedUserDate[0];
         userTaskForm.assignee = data.id;
         userTaskForm.text = data.username;
         userTaskForm.candidateUsers = null;
+        // userTaskForm.priority = 'null'
         this.showMultiFlog = false;
         this.multiLoopType = 'Null';
         this.changeMultiLoopType(this.multiLoopType);
@@ -408,28 +375,20 @@ export default {
         userTaskForm.candidateUsers = this.selectedUserDate.map(k => k.id).join() || null;
         userTaskForm.text = this.selectedUserDate.map(k => k.username).join() || null;
         userTaskForm.assignee = null;
+        // userTaskForm.priority = '2'
         this.showMultiFlog = true;
       }
       this.updateElementTask()
       this.userOpen = false;
     },
     changeSelectRoles(val) {
-	    userTaskForm.dataType = 'ROLES';
       userTaskForm.candidateGroups = val.join() || null;
       let textArr = this.roleOptions.filter(k => val.indexOf(`ROLE${k.id}`) >= 0);
       userTaskForm.text = textArr?.map(k => k.roleName).join() || null;
       this.updateElementTask();
     },
-    changeSelectJobs(val) {
-	    userTaskForm.dataType = 'JOBS';
-      userTaskForm.candidateGroups = val.join() || null;
-      let textArr = this.jobOptions.filter(k => val.indexOf(`JOB${k.id}`) >= 0);
-      userTaskForm.text = textArr?.map(k => k.roleName).join() || null;
-      this.updateElementTask();
-    },
     checkedDeptChange(checkedIds, checkedData) {
       console.log("checkedDeptChange=====", checkedIds, checkedData)
-	    userTaskForm.dataType = 'DEPTS';
       if (checkedIds && checkedIds.length > 0) {
         this.deptIds = checkedIds;
       }
@@ -462,14 +421,6 @@ export default {
           let textArr = this.roleOptions.filter(k => this.roleIds.indexOf(`ROLE${k.id}`) >= 0);
           userTaskForm.text = textArr?.map(k => k.roleName).join() || null;
         }
-      } else if (val === 'JOBS') {
-        this.getJobOptions();
-        console.log("切换时this.jobIds===", this.jobIds)
-        if (this.jobIds && this.jobIds.length > 0) {
-          userTaskForm.candidateGroups = this.jobIds.join() || null;
-          let textArr = this.jobOptions.filter(k => this.jobIds.indexOf(`JOB${k.id}`) >= 0);
-          userTaskForm.text = textArr?.map(k => k.name).join() || null;
-        }
       } else if (val === 'DEPTS') {
         this.getDeptTreeData();
         if (this.deptIds && this.deptIds.length > 0) {
@@ -496,7 +447,7 @@ export default {
         userTaskForm.text = "流程发起人";
       }
       this.updateElementTask();
-      if (val === 'ROLES' || val === 'JOBS' || val === 'DEPTS' || (val === 'USERS' && this.selectedUser.ids.length > 1)) {
+      if (val === 'ROLES' || val === 'DEPTS' || (val === 'USERS' && this.selectedUser.ids.length > 1)) {
         this.showMultiFlog = true;
       } else {
         this.showMultiFlog = false;
@@ -526,15 +477,19 @@ export default {
       let completionCondition = null;
       // 会签
       if (type === "SequentialMultiInstance") {
-        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", { isSequential: true});
+        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", { isSequential: false });
         completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: '${nrOfCompletedInstances >= nrOfInstances}' });
         window.bpmnInstances.modeling.updateProperties(this.bpmnElement, { taskProperty: 1 });
+        // userTaskForm.taskProperty = 1
+        // userTaskForm.priority = 1
       }
       // 或签
       if (type === "ParallelMultiInstance") {
-        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics", { isSequential: false });
+        this.multiLoopInstance = window.bpmnInstances.moddle.create("bpmn:MultiInstanceLoopCharacteristics");
         completionCondition = window.bpmnInstances.moddle.create("bpmn:FormalExpression", { body: '${nrOfCompletedInstances > 0}' });
         window.bpmnInstances.modeling.updateProperties(this.bpmnElement, { taskProperty: 2 });
+        // userTaskForm.taskProperty = 2
+        // userTaskForm.priority = 2
       }
       // 更新多实例配置
       window.bpmnInstances.modeling.updateProperties(this.bpmnElement, {
@@ -547,6 +502,8 @@ export default {
         elementVariable: 'assignee',
         completionCondition
       });
+
+      this.updateElementTask();
     },
   }
 };

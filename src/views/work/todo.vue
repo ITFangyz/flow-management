@@ -52,6 +52,15 @@
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="任务编号" align="center" prop="taskRecordId" :show-overflow-tooltip="true"/>
       <el-table-column label="流程名称" align="center" prop="procName"/>
+      <el-table-column label="流程状态" align="center" width="100">
+        <template slot-scope="scope">
+          <!-- <el-tag v-if="scope.row.finishTime == null" size="mini">进行中</el-tag> -->
+          <el-tag v-if="scope.row.procStatus == 1" size="mini">审批中</el-tag>
+          <el-tag type="success" v-if="scope.row.procStatus == 2" size="mini">已完成</el-tag>
+          <el-tag type="danger" v-if="scope.row.procStatus == 3" size="mini">已拒绝</el-tag>
+          <el-tag type="warning" v-if="scope.row.procStatus == 4  " size="mini">已撤销</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="任务节点" align="center" prop="taskName"/>
       <!-- <el-table-column label="流程版本" align="center">
         <template slot-scope="scope">
@@ -129,6 +138,7 @@ export default {
         // pageNum: 1,
         current: 1,
         pageSize: 10,
+        procStatus: '1',
         title: null,
         id: null
       },

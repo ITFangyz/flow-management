@@ -87,7 +87,7 @@
                             <i class="el-icon-menu"></i>
                             <span slot="title">已办</span>
                         </el-menu-item>
-                        <el-menu-item index="copeMe">
+                        <el-menu-item index="copyMe">
                             <i class="el-icon-document"></i>
                             <span slot="title">抄送我的</span>
                         </el-menu-item>
@@ -97,7 +97,7 @@
                         </el-menu-item>
                     </el-menu>
                 </div>
-                <message-list :typeData="listData" :operateType="operateType" class="list-main"></message-list>
+                <message-list :typeData="listData" :operateType="operateType" class="list-main" :categoryList="categoryList"></message-list>
             </el-tab-pane>
         </el-tabs>
     </div>
@@ -182,7 +182,7 @@ export default {
             quickEntryList:[],  //快捷入口区域列表
             activeName: 'first',    //tab页初始显示
             operateType: 'todo',    //审批操作类型
-            listData:[],  //传递给子组件数据
+            listData:'',  //传递给子组件数据
             todoList:{
                 holidayList: {
                     title: '请假申请',

@@ -1,9 +1,28 @@
 <template>
     <div class="main">
         
-        <div class="center" v-infinite-scroll="loadDataList">
+        <div class="center">
             <div class="header">
-                <div>时间排序</div>
+                <!-- <div>时间排序</div> -->
+                <el-dropdown trigger="click">
+                    <span class="el-dropdown-link">
+                        排序方式<i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown">
+                        <el-dropdown-item>时间顺序</el-dropdown-item>
+                        <el-dropdown-item>时间倒序</el-dropdown-item>
+                    </el-dropdown-menu>
+                </el-dropdown>
+                <el-dropdown trigger="click">
+                    <span class="el-dropdown-link">
+                        流程类型<i class="el-icon-arrow-down el-icon--right"></i>
+                    </span>
+                    <el-dropdown-menu slot="dropdown" >
+                        <el-dropdown-item v-for="item in categoryList" :key="item.id" @click="typeSelect">{{item.procTypeName}}</el-dropdown-item>
+                        <!-- <el-dropdown-item>狮子头</el-dropdown-item>
+                        <el-dropdown-item>螺蛳粉</el-dropdown-item> -->
+                    </el-dropdown-menu>
+                </el-dropdown>
                 <div class="showType">
                     <i class="el-icon-more" @click="switchShowType('breif')"></i>
                     <el-divider direction="vertical"></el-divider>
@@ -13,41 +32,77 @@
             <div v-if="listData.length == 0" style="text-align:center">
                 暂无数据
             </div>
-            <div class="list" v-show="showType == 'detail' && listData.length !== 0">
-                <div class="list-item" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
-                    <el-row>
-                        <el-col :span="18"><div class="point-title">{{item.procName}}</div></el-col>
-                    </el-row>
-                    <el-row align="middle" type="flex">
-                        <el-col :span="6"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
-                        <el-col :span="6"><div class="point-title">{{item.handlerName}}</div></el-col>
-                        <el-col :span="12"><div class="usual">{{item.dept}}</div></el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="8"><div class="usual">申请理由</div></el-col>
-                        <el-col :span="16"><div class="point-title">{{item.innerProcDefId}}</div></el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="8"><div class="usual">资产名称</div></el-col>
-                        <el-col :span="16"><div class="point-title">{{item.procNo}}</div></el-col>
-                    </el-row>
-                    <el-row>
-                        <el-col :span="24"><div class="usual">{{item.crtTime}}</div></el-col>
-                    </el-row>
+            <div v-if="typeData !== 'launch'">
+                <div class="list" v-show="showType == 'detail' && listData.length !== 0" v-infinite-scroll="loadMore" infinite-scroll-delay="200">
+                    <div class="list-item" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
+                        <el-row>
+                            <el-col :span="18"><div class="point-title">{{item.procName}}</div></el-col>
+                        </el-row>
+                        <el-row align="middle" type="flex">
+                            <el-col :span="6"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
+                            <el-col :span="6"><div class="point-title">{{item.handlerName}}</div></el-col>
+                            <el-col :span="12"><div class="usual">{{item.dept}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="8"><div class="usual">申请理由</div></el-col>
+                            <el-col :span="16"><div class="point-title">{{item.applyReason}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="8"><div class="usual">资产名称</div></el-col>
+                            <el-col :span="16"><div class="point-title">{{item.assetName}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="24"><div class="usual">{{item.crtTime}}</div></el-col>
+                        </el-row>
+                    </div>
+                    <div v-if="getBottom" class="bottomText">已加载全部数据</div>
+                </div>
+                <div class="list" v-show="showType == 'breif'">
+                    <div class="list-item-simple" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
+                        <el-row align="middle" type="flex">
+                            <el-col :span="4"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
+                            <el-col :span="20"><span class="point-title">{{item.procName}}</span></el-col>
+                        </el-row>
+                    </div>
+                    <div v-if="getBottom" class="bottomText">已加载全部数据</div>
                 </div>
             </div>
-            <div class="list" v-show="showType == 'breif'">
-                <div class="list-item-simple" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
-                    <el-row align="middle" type="flex">
-                        <el-col :span="4"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
-                        <!-- <el-col :span="8"><span class="point-title">{{item.name}}</span></el-col> -->
-                        <el-col :span="20"><span class="point-title">{{item.procName}}</span></el-col>
-                    </el-row>
-                    <!-- <div style="flex:1"><el-avatar icon="el-icon-user-solid"></el-avatar></div>
-                    <div style="flex:2"><span class="point-title">{{item.name}}</span></div>
-                    <div style="flex:3"><span class="point-title">{{item.title}}</span></div> -->
+            <div v-if="typeData == 'launch'">
+                <div class="list" v-show="showType == 'detail' && listData.length !== 0" v-infinite-scroll="loadMore" infinite-scroll-delay="200">
+                    <div class="list-item" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
+                        <el-row>
+                            <el-col :span="18"><div class="point-title">{{item.title}}</div></el-col>
+                        </el-row>
+                        <el-row align="middle" type="flex">
+                            <el-col :span="6"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
+                            <el-col :span="6"><div class="point-title">{{item.sponsorName}}</div></el-col>
+                            <el-col :span="12"><div class="usual">{{item.dept}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="8"><div class="usual">申请理由</div></el-col>
+                            <el-col :span="16"><div class="point-title">{{item.applyReason}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="8"><div class="usual">资产名称</div></el-col>
+                            <el-col :span="16"><div class="point-title">{{item.assetName}}</div></el-col>
+                        </el-row>
+                        <el-row>
+                            <el-col :span="24"><div class="usual">{{item.crtTime}}</div></el-col>
+                        </el-row>
+                    </div>
+                    <div v-if="getBottom" class="bottomText">已加载全部数据</div>
+                </div>
+                <div class="list" v-show="showType == 'breif'">
+                    <div class="list-item-simple" v-for="item in listData" :key="item.id" shadow="always"  @click="toDetail(item)">
+                        <el-row align="middle" type="flex">
+                            <el-col :span="4"><el-avatar icon="el-icon-user-solid" size="small"></el-avatar></el-col>
+                            <el-col :span="20"><span class="point-title">{{item.title}}</span></el-col>
+                        </el-row>
+                    </div>
+                    <div v-if="getBottom" class="bottomText">已加载全部数据</div>
                 </div>
             </div>
+            
         </div>
         <div class="infoPart">
             <message-detail :messageInfo="messageInfo" v-if="messageInfo" :operateType="operateType"></message-detail>
@@ -63,13 +118,17 @@ import { listOwnProcess } from '@/api/workflow/process';
 export default {
     props:{
         typeData: {
-            // type: Array,
+            type: String,
             required: false
         },
         operateType:{
             type: String,
             required: true
-        }
+        },
+        categoryList:{
+            type: Array,
+            required: true
+        },
     },
     components:{
         messageDetail,
@@ -83,39 +142,63 @@ export default {
             listData:[],
             showType:"detail",
             messageInfo:null,
+            getBottom: false,   //数据是否全部加载
         }
     },
     created(){
-        console.log("listData    created===========", this.typeData)
-        if( this.typeData == 'todo'){
-            listTodoProcess(this.queryParams).then(response => {
-                this.listData = response.data.records;
-                this.total = response.data.total;
-                this.loading = false;
-            });
-        } else if(this.typeData == 'done'){
-            listFinishedProcess(this.queryParams).then(response => {
-                this.listData = response.data.records;
-                this.total = response.data.total;
-                this.loading = false;
-            });
-        } else if(this.typeData == 'copyMe'){
-            listCopyProcess(this.queryParams).then(response => {
-                this.listData = response.data.records;
-                this.total = response.data.total;
-                this.loading = false;
-            });
-        } else if(this.typeData == 'launch'){
-            listOwnProcess(this.queryParams).then(response => {
-                console.log("获取我的流程记录", response)
-                this.listData = response.data.records;
-                this.total = response.data.total;
-                this.loading = false;
-            });
-        }
+        console.log("created===========operateType", this.typeData, this.operateType)
     },
     methods:{
-        loadDataList(){
+        typeSelect(val){
+            console.log("类型切换",val)
+            // console.log("procTypeId")
+        },
+        //检查是否已加载所有数据
+        checkBottom(){
+            if(this.queryParams.current * this.queryParams.pageSize >= this.total){
+                this.getBottom = true
+                // console.log("到底部了", this.getBottom )
+            }
+        },
+        //下拉加载
+        loadMore(){
+            // console.log("加载更多", this.queryParams)
+            if(!this.getBottom){
+                this.queryParams.current++
+                if( this.typeData == 'todo'){
+                    console.log("查询待办param", this.queryParams)
+                    listTodoProcess(this.queryParams).then(response => {
+                        this.listData = this.listData.length == 0 ? response.data.records : this.listData.concat(response.data.records);
+                        this.total = response.data.total;
+                        this.loading = false;
+                        this.checkBottom()
+                    });
+                } else if(this.typeData == 'done'){
+                    console.log("查询已完成param", this.queryParams)
+                    listFinishedProcess(this.queryParams).then(response => {
+                        this.listData = this.listData.length == 0 ? response.data.records : this.listData.concat(response.data.records);
+                        this.total = response.data.total;
+                        this.loading = false;
+                        this.checkBottom()
+                    });
+                } else if(this.typeData == 'copyMe'){
+                    listCopyProcess(this.queryParams).then(response => {
+                        this.listData = this.listData.length == 0 ? response.data.records : this.listData.concat(response.data.records);
+                        this.total = response.data.total;
+                        this.loading = false;
+                        this.checkBottom()
+                    });
+                } else if(this.typeData == 'launch'){
+                    listOwnProcess(this.queryParams).then(response => {
+                        console.log("获取我的流程记录", response)
+                        // this.listData = response.data.records;
+                        this.listData = this.listData.length == 0 ? response.data.records : this.listData.concat(response.data.records);
+                        this.total = response.data.total;
+                        this.loading = false;
+                        this.checkBottom()
+                    });
+                }
+            }
             
         },
         toDetail(value){
@@ -124,9 +207,48 @@ export default {
         },
         switchShowType(value){
             this.showType = value
-        }
+        },
     },
     watch:{
+        typeData(newVal){
+            console.log("typeData newVal===", newVal)
+            this.queryParams.current = 1
+            this.listData = []
+            this.getBottom = false
+            if( newVal == 'todo'){
+                console.log("查询待办param", this.queryParams)
+                listTodoProcess(this.queryParams).then(response => {
+                    this.listData = response.data.records;
+                    this.total = response.data.total;
+                    this.loading = false;
+                    this.checkBottom()
+                });
+            } else if(newVal == 'done'){
+                console.log("查询已完成param", this.queryParams)
+                listFinishedProcess(this.queryParams).then(response => {
+                    this.listData = response.data.records;
+                    this.total = response.data.total;
+                    this.loading = false;
+                    this.checkBottom()
+                });
+            } else if(newVal == 'copyMe'){
+                listCopyProcess(this.queryParams).then(response => {
+                    this.listData = response.data.records;
+                    this.total = response.data.total;
+                    this.loading = false;
+                    this.checkBottom()
+                });
+            } else if(newVal == 'launch'){
+                listOwnProcess(this.queryParams).then(response => {
+                    console.log("获取我的流程记录", response)
+                    this.listData = response.data.records;
+                    this.total = response.data.total;
+                    this.loading = false;
+                    this.checkBottom()
+                });
+            }
+        }
+
         // listData(){
         //    
         // },
@@ -201,6 +323,11 @@ export default {
         flex: 1;
         overflow: auto;
         max-height: 70vh;
+    }
+    .bottomText{
+        padding: 10px;
+        font-size: 12px;
+        color: gray;
     }
 }
 </style>

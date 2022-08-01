@@ -40,6 +40,13 @@
                 </el-select>
               </el-col>
             </el-form-item>
+            <el-form-item label="流程权限" prop="scopes">
+              <el-col :span="22">
+                <el-select v-model="designerForm.scopes" placeholder="请选择" clearable style="width:100%" @change="scopeChange">
+                  <el-option v-for="item in scopesOptions" :key="item.relationType" :label="item.text" :value="item.relationType" />
+                </el-select>
+              </el-col>
+            </el-form-item>
             <el-form-item label="备注" prop="procRemark">
               <el-col :span="22">
                 <!-- <el-input v-model="designerForm.procRemark" clearable /> -->
@@ -148,6 +155,25 @@ export default {
       flowableForm:{},  //表单数据
       flowId: '', //流程ID
       formId: '', //表单ID
+      scopes: '', //流程作用范围
+      scopesOptions: [  // 1=岗位,2=部门,3=用户,4=全部
+        {
+          relationType: 1,
+          text: "岗位"
+        },
+        {
+          relationType: 2,
+          text: "部门"
+        },
+        {
+          relationType: 3,
+          text: "用户"
+        },
+        {
+          relationType: 4,
+          text: "全部"
+        },
+      ],  
     };
   },
   created() {
@@ -194,6 +220,10 @@ export default {
     // }
   },
   methods: {
+    // 流程作用范围改变
+    scopeChange(val){
+      console.log("当前流程范围选中值", val)
+    },
     sendRequest(){
       let dto = {
         	// "bpmXml": "",
@@ -351,7 +381,7 @@ export default {
     getCategoryList() {
       listCategory({pageNum: 1,pageSize: 10})
         .then(response => {
-          console.log("流程分类返回", response)
+          // console.log("流程分类返回", response)
           this.categoryOptions = response.data.records
         })
     },

@@ -40,7 +40,7 @@ export function listUsers(query) {
     })
 }
 
-// 查询用户信息列表
+// 查询部门信息列表
 export function listDepts(query) {
     console.log()
     return request({

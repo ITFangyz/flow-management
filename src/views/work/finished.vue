@@ -45,11 +45,20 @@
       <el-table-column label="任务节点" align="center" prop="taskName" />
       <el-table-column label="流程发起人" align="center">
         <template slot-scope="scope">
-          <label>{{scope.row.startUserName}} <el-tag type="info" size="mini">{{scope.row.startDeptName}}</el-tag></label>
+          <label>{{scope.row.startUserName}} <el-tag size="mini">{{scope.row.sponsorName}}</el-tag></label>
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="crtTime" width="180"/>
-      <el-table-column label="审批时间" align="center" prop="finishTime" width="180"/>
+      <!-- <el-table-column label="审批时间" align="center" prop="finishTime" width="180"/> -->
+      <el-table-column label="流程状态" align="center" width="100">
+        <template slot-scope="scope">
+          <!-- <el-tag v-if="scope.row.finishTime == null" size="mini">进行中</el-tag> -->
+          <el-tag v-if="scope.row.procStatus == 1" size="mini">审批中</el-tag>
+          <el-tag type="success" v-if="scope.row.procStatus == 2" size="mini">已完成</el-tag>
+          <el-tag type="danger" v-if="scope.row.procStatus == 3" size="mini">已拒绝</el-tag>
+          <el-tag type="warning" v-if="scope.row.procStatus == 4  " size="mini">已撤销</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="耗时" align="center" prop="duration" width="180"/>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
